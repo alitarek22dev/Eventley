@@ -5,7 +5,8 @@ import '../core/app_colors.dart';
 import '../core/app_settings.dart';
 import '../core/app_strings.dart';
 import '../widgets/onboarding_controls.dart';
-import 'home_screen.dart';
+import 'login_screen.dart';
+
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -35,9 +36,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await SettingsScope.of(context).completeOnboarding();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

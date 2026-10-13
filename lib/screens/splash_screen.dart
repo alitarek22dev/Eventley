@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_assets.dart';
 import '../core/app_settings.dart';
-import 'home_screen.dart';
+import 'login_screen.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -25,10 +25,11 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) =>
-            completed ? const HomeScreen() : const OnboardingScreen(),
+            completed ? const LoginScreen() : const OnboardingScreen(),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
