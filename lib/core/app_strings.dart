@@ -8,12 +8,16 @@ class AppStrings {
   final Locale locale;
 
   bool get _isAr => locale.languageCode == 'ar';
+  bool get isArabic => _isAr;
 
   factory AppStrings.of(BuildContext context) {
     return AppStrings(SettingsScope.of(context).locale);
   }
 
+  String get addNewEvent => _isAr ? 'إضافة فعالية جديدة' : 'Add New Event';
+
   String get language => _isAr ? 'اللغة' : 'Language';
+
 
   String get letsStart => _isAr ? 'لنبدأ' : "Let's Start";
 
@@ -145,6 +149,59 @@ class AppStrings {
   String get resetPasswordEmailSent => _isAr
       ? 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني'
       : 'Password reset link sent to your email';
+
+  // Navigation tabs
+  String get favorites => _isAr ? 'المفضلة' : 'Favorites';
+  String get profile => _isAr ? 'الملف الشخصي' : 'Profile';
+
+  // Home screen
+  String get welcomeBack => _isAr ? 'مرحبًا بك' : 'Welcome Back';
+  String get userNamePlaceholder => _isAr ? 'جون صفوت' : 'Ali Tarek';
+  String get userEmailPlaceholder => 'alitarek@gmail.com';
+  String get cairoEgypt => _isAr ? 'القاهرة، مصر' : 'Cairo, Egypt';
+  String get searchForEvent => _isAr ? 'البحث عن فعالية' : 'Search for Event';
+
+  // Categories
+  String get all => _isAr ? 'الكل' : 'All';
+  String get sport => _isAr ? 'رياضة' : 'Sport';
+  String get bookClub => _isAr ? 'نادي الكتاب' : 'Book Club';
+  String get birthday => _isAr ? 'عيد ميلاد' : 'Birthday';
+  String get meeting => _isAr ? 'اجتماع' : 'Meeting';
+  String get exhibition => _isAr ? 'معرض' : 'Exhibition';
+
+  // Events descriptions & titles
+  String get birthdayPartyTitle =>
+      _isAr ? 'حفلة عيد ميلاد مميزة' : 'This is a Birthday Party';
+  String get meetingTitle => _isAr
+      ? 'اجتماع لمناقشة تطوير المشروع'
+      : 'Meeting for updating the development method';
+  String get exhibitionTitle => _isAr
+      ? 'معرض فنون فريد من نوعه لعشاق الإبداع'
+      : 'Exhibition unique art for everyone';
+  String get bookClubTitle => _isAr
+      ? 'نادي القراءة لمناقشة الكتب المميزة'
+      : 'Book club meeting for reading enthusiasts';
+  String get sportEventTitle =>
+      _isAr ? 'يوم رياضي وبطولة كرة قدم' : 'Sports day and football tournament';
+
+  // Favorites screen
+  String get noFavoritesYet =>
+      _isAr ? 'لا توجد فعاليات في المفضلة بعد' : 'No favorite events yet';
+  String get noFavoritesSub => _isAr
+      ? 'انقر على رمز القلب في أي فعالية لإضافتها إلى المفضلة'
+      : 'Tap the heart icon on any event to add it to your favorites';
+  String get searchFavoriteEvents =>
+      _isAr ? 'البحث في الفعاليات المفضلة' : 'Search for Event';
+  String get noEventsFound => _isAr
+      ? 'لم يتم العثور على أي فعاليات'
+      : 'No events found matching your search';
+
+  // Profile screen
+  String get darkMode => _isAr ? 'الوضع الداكن' : 'Dark Mode';
+  String get logout => _isAr ? 'تسجيل الخروج' : 'Logout';
+  String get arabic => _isAr ? 'العربية' : 'Arabic';
+  String get english => _isAr ? 'الإنجليزية' : 'English';
 }
+
 
 
