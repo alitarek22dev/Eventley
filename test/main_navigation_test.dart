@@ -179,5 +179,78 @@ void main() {
 
       expect(settings.isDark, isTrue);
     });
+
+    testWidgets('Tapping FAB opens CreateEventScreen, validates and creates new event', (tester) async {
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final settings = AppSettings();
+
+      await tester.pumpWidget(
+        createTestWidget(settings: settings, child: const HomeScreen()),
+      );
+
+      // Verify FAB exists and tap it
+      final fab = find.byType(FloatingActionButton);
+      expect(fab, findsOneWidget);
+      await tester.tap(fab);
+      await tester.pumpAndSettle();
+
+      // Verify CreateEventScreen opened
+      expect(find.text('Create Event'), findsWidgets);
+
+      // Try submitting without fields (triggers validation)
+      final submitButton = find.byType(ElevatedButton);
+      await tester.ensureVisible(submitButton);
+      await tester.pumpAndSettle();
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Please enter event title'), findsOneWidget);
+
+
+      // Fill title
+      await tester.enterText(find.byType(TextFormField).first, 'Super Tennis Tournament');
+
+      // Fill description
+      await tester.enterText(find.byType(TextFormField).last, 'Exciting tournament for everyone');
+      await tester.pumpAndSettle();
+
+      // Select location
+      final locationDropdown = find.text('Choose Event Location');
+      await tester.ensureVisible(locationDropdown);
+      await tester.tap(locationDropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cairo, Egypt').last);
+      await tester.pumpAndSettle();
+
+      // Submit (should prompt for date)
+      await tester.ensureVisible(submitButton);
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Please choose a date'), findsOneWidget);
+
+      // Choose date
+      final chooseDateBtn = find.text('Choose Date');
+      await tester.ensureVisible(chooseDateBtn);
+      await tester.tap(chooseDateBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+
+      // Tap Create Event
+      await tester.ensureVisible(submitButton);
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
+
+      // Verify popped back to HomeScreen and new event is displayed
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.text('Super Tennis Tournament'), findsOneWidget);
+    });
   });
 }
+
+

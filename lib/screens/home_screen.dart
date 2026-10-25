@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../models/event_item.dart';
+import 'create_event_screen.dart';
 import 'favorites_screen_tab.dart';
 import 'home_screen_tab.dart';
 import 'profile_screen_tab.dart';
@@ -17,6 +18,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final EventProvider _eventProvider = EventProvider();
+
+  @override
+  void initState() {
+    super.initState();
+    _eventProvider.load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: _currentIndex == 0
             ? FloatingActionButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(strings.addNewEvent),
-                      behavior: SnackBarBehavior.floating,
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => EventScope(
+                        provider: _eventProvider,
+                        child: const CreateEventScreen(),
+                      ),
                     ),
                   );
                 },
-
                 backgroundColor: AppColors.primary,
                 shape: const CircleBorder(
                   side: BorderSide(color: Colors.white, width: 3),
@@ -58,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Icon(Icons.add, color: Colors.white, size: 28),
               )
             : null,
+
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         bottomNavigationBar: Theme(
           data: Theme.of(context).copyWith(

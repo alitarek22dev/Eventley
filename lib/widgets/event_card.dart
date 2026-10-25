@@ -21,31 +21,29 @@ class EventCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final strings = AppStrings.of(context);
 
-    final cardBorderColor = isDark ? AppColors.primary : AppColors.primary;
-    final containerBg = isDark ? AppColors.darkBackground : Colors.white;
+    final cardBorderColor = AppColors.primary;
+    final containerBg = isDark ? const Color(0xFF101127) : Colors.white;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      height: 220,
+      height: 210,
       decoration: BoxDecoration(
         color: containerBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: cardBorderColor,
-          width: 1.2,
+          width: 1.5,
         ),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(14.5),
         child: Stack(
           children: [
             // Background Image
@@ -53,19 +51,30 @@ class EventCard extends StatelessWidget {
               child: Image.asset(
                 event.getImage(isDark),
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: isDark ? const Color(0xFF101127) : Colors.grey[200],
+                  child: const Center(
+                    child: Icon(Icons.broken_image, color: AppColors.primary, size: 40),
+                  ),
+                ),
               ),
             ),
 
-            // Date Badge (Top Left / Start)
+            // Date Badge (Top Start)
             PositionedDirectional(
-              top: 10,
-              start: 10,
+              top: 8,
+              start: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkBackground : Colors.white)
-                      .withValues(alpha: 0.85),
+                  color: isDark
+                      ? const Color(0xFF101127).withValues(alpha: 0.92)
+                      : Colors.white.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? AppColors.primary.withValues(alpha: 0.5) : Colors.transparent,
+                    width: 1,
+                  ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -74,8 +83,8 @@ class EventCard extends StatelessWidget {
                       event.day,
                       style: const TextStyle(
                         color: AppColors.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
                         height: 1.0,
                       ),
                     ),
@@ -96,15 +105,20 @@ class EventCard extends StatelessWidget {
 
             // Bottom Title & Heart bar
             Positioned(
-              left: 10,
-              right: 10,
-              bottom: 10,
+              left: 8,
+              right: 8,
+              bottom: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkBackground : Colors.white)
-                      .withValues(alpha: 0.90),
+                  color: isDark
+                      ? const Color(0xFF101127).withValues(alpha: 0.95)
+                      : Colors.white.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? AppColors.primary.withValues(alpha: 0.4) : Colors.transparent,
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -117,19 +131,24 @@ class EventCard extends StatelessWidget {
                           color: isDark ? AppColors.darkText : AppColors.lightText,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
+                          height: 1.25,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    InkWell(
-                      onTap: onFavoriteToggle,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: AppColors.primary,
-                          size: 24,
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: onFavoriteToggle,
+                        customBorder: const CircleBorder(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),

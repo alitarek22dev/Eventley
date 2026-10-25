@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/app_assets.dart';
 import '../core/app_strings.dart';
@@ -19,6 +21,9 @@ class EventItem {
   final EventCategory category;
   final String lightImage;
   final String darkImage;
+  final String? description;
+  final String? location;
+  final String? time;
 
   const EventItem({
     required this.id,
@@ -28,40 +33,105 @@ class EventItem {
     required this.category,
     required this.lightImage,
     required this.darkImage,
+    this.description,
+    this.location,
+    this.time,
   });
 
   String getLocalizedTitle(AppStrings strings) {
-    switch (category) {
-      case EventCategory.birthday:
-        return strings.birthdayPartyTitle;
-      case EventCategory.meeting:
-        return strings.meetingTitle;
-      case EventCategory.exhibition:
-        return strings.exhibitionTitle;
-      case EventCategory.bookClub:
-        return strings.bookClubTitle;
-      case EventCategory.sport:
-        return strings.sportEventTitle;
-    }
+    if (id == '1') return strings.birthdayPartyTitle;
+    if (id == '2') return strings.meetingTitle;
+    if (id == '3') return strings.exhibitionTitle;
+    if (id == '4') return strings.bookClubTitle;
+    if (id == '5') return strings.sportEventTitle;
+    return title;
   }
 
   String getImage(bool isDark) => isDark ? darkImage : lightImage;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'day': day,
+      'month': month,
+      'category': category.name,
+      'lightImage': lightImage,
+      'darkImage': darkImage,
+      'description': description,
+      'location': location,
+      'time': time,
+    };
+  }
+
+  factory EventItem.fromJson(Map<String, dynamic> json) {
+    return EventItem(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      day: json['day'] as String,
+      month: json['month'] as String,
+      category: EventCategory.values.firstWhere(
+        (c) => c.name == json['category'],
+        orElse: () => EventCategory.sport,
+      ),
+      lightImage: json['lightImage'] as String,
+      darkImage: json['darkImage'] as String,
+      description: json['description'] as String?,
+      location: json['location'] as String?,
+      time: json['time'] as String?,
+    );
+  }
 }
 
 class EventProvider extends ChangeNotifier {
-  final Set<String> _favoriteIds = {'1'}; // Default first event favorited
+  static const String _eventsKey = 'custom_events';
+  static const String _favoritesKey = 'favorite_events';
+
+  final Set<String> _favoriteIds = {'1'};
+  List<EventItem> _customEvents = [];
 
   Set<String> get favoriteIds => _favoriteIds;
 
   bool isFavorite(String eventId) => _favoriteIds.contains(eventId);
 
-  void toggleFavorite(String eventId) {
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final favsList = prefs.getStringList(_favoritesKey);
+    if (favsList != null) {
+      _favoriteIds.clear();
+      _favoriteIds.addAll(favsList);
+    }
+
+    final eventsJson = prefs.getString(_eventsKey);
+    if (eventsJson != null) {
+      try {
+        final decoded = jsonDecode(eventsJson) as List<dynamic>;
+        _customEvents = decoded
+            .map((e) => EventItem.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (_) {}
+    }
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String eventId) async {
     if (_favoriteIds.contains(eventId)) {
       _favoriteIds.remove(eventId);
     } else {
       _favoriteIds.add(eventId);
     }
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_favoritesKey, _favoriteIds.toList());
+  }
+
+  Future<void> addEvent(EventItem event) async {
+    _customEvents.insert(0, event);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = jsonEncode(_customEvents.map((e) => e.toJson()).toList());
+    await prefs.setString(_eventsKey, encoded);
   }
 
   static final List<EventItem> sampleEvents = [
@@ -112,10 +182,10 @@ class EventProvider extends ChangeNotifier {
     ),
   ];
 
-  List<EventItem> get allEvents => sampleEvents;
+  List<EventItem> get allEvents => [..._customEvents, ...sampleEvents];
 
   List<EventItem> get favoriteEvents =>
-      sampleEvents.where((e) => _favoriteIds.contains(e.id)).toList();
+      allEvents.where((e) => _favoriteIds.contains(e.id)).toList();
 }
 
 class EventScope extends InheritedNotifier<EventProvider> {

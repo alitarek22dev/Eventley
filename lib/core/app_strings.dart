@@ -201,7 +201,37 @@ class AppStrings {
   String get logout => _isAr ? 'تسجيل الخروج' : 'Logout';
   String get arabic => _isAr ? 'العربية' : 'Arabic';
   String get english => _isAr ? 'الإنجليزية' : 'English';
+
+  // Add Event Screen
+  String get createEvent => _isAr ? 'إنشاء فعالية' : 'Create Event';
+  String get eventTitle => _isAr ? 'عنوان الفعالية' : 'Event Title';
+  String get enterEventTitle =>
+      _isAr ? 'أدخل عنوان الفعالية' : 'Enter event title';
+  String get eventTitleRequired =>
+      _isAr ? 'يرجى إدخال عنوان الفعالية' : 'Please enter event title';
+  String get description => _isAr ? 'الوصف' : 'Description';
+  String get enterDescription =>
+      _isAr ? 'أدخل وصف الفعالية' : 'Enter event description';
+  String get descriptionRequired =>
+      _isAr ? 'يرجى إدخال وصف الفعالية' : 'Please enter event description';
+  String get eventDate => _isAr ? 'تاريخ الفعالية' : 'Event Date';
+  String get chooseDate => _isAr ? 'اختر التاريخ' : 'Choose Date';
+  String get dateRequired =>
+      _isAr ? 'يرجى اختيار التاريخ' : 'Please choose a date';
+  String get eventTime => _isAr ? 'وقت الفعالية' : 'Event Time';
+  String get chooseTime => _isAr ? 'اختر الوقت' : 'Choose Time';
+  String get location => _isAr ? 'الموقع' : 'Location';
+  String get chooseEventLocation =>
+      _isAr ? 'اختر موقع الفعالية' : 'Choose Event Location';
+  String get locationRequired =>
+      _isAr ? 'يرجى اختيار موقع الفعالية' : 'Please choose event location';
+  String get category => _isAr ? 'الفئة' : 'Category';
+  String get selectEventImage =>
+      _isAr ? 'صورة الفعالية' : 'Event Image';
+  String get eventCreatedSuccessfully =>
+      _isAr ? 'تم إنشاء الفعالية بنجاح' : 'Event created successfully';
 }
+
 
 
 
