@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import '../core/app_assets.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../services/auth_service.dart';
 import '../widgets/onboarding_controls.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final AuthService? authService;
+
+  const ResetPasswordScreen({super.key, this.authService});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -15,6 +18,15 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  late final AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   @override
   void dispose() {
@@ -22,15 +34,42 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
-  void _handleResetPassword() {
-    if (_formKey.currentState?.validate() ?? false) {
-      final strings = AppStrings.of(context);
+  Future<void> _handleResetPassword() async {
+    if (_isLoading) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final strings = AppStrings.of(context);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.sendPasswordResetEmail(
+        email: _emailController.text,
+      );
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(strings.resetPasswordEmailSent),
           behavior: SnackBarBehavior.floating,
         ),
       );
+    } catch (e) {
+      if (!mounted) return;
+      final errorMessage = _authService.getErrorMessage(e, strings);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -148,6 +187,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     const SizedBox(height: 24),
                     AppPrimaryButton(
                       label: strings.resetPassword,
+                      isLoading: _isLoading,
                       onPressed: _handleResetPassword,
                     ),
                     const SizedBox(height: 16),

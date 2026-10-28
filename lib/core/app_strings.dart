@@ -230,7 +230,38 @@ class AppStrings {
       _isAr ? 'صورة الفعالية' : 'Event Image';
   String get eventCreatedSuccessfully =>
       _isAr ? 'تم إنشاء الفعالية بنجاح' : 'Event created successfully';
+
+  // Authentication error messages
+  String get emailAlreadyInUse => _isAr
+      ? 'هذا البريد الإلكتروني مستخدم بالفعل'
+      : 'This email is already registered';
+  String get weakPassword => _isAr
+      ? 'كلمة المرور ضعيفة جدًا'
+      : 'The password provided is too weak';
+  String get invalidEmailOrPassword => _isAr
+      ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+      : 'Invalid email or password';
+  String get userNotFound => _isAr
+      ? 'لم يتم العثور على حساب بهذا البريد'
+      : 'No account found with this email';
+  String get userDisabled =>
+      _isAr ? 'تم تعطيل هذا الحساب' : 'This account has been disabled';
+  String get tooManyRequests => _isAr
+      ? 'محاولات كثيرة خاطئة، يرجى المحاولة لاحقًا'
+      : 'Too many attempts, please try again later';
+  String get networkError => _isAr
+      ? 'حدث خطأ في الاتصال بالشبكة'
+      : 'A network error occurred. Please check your connection';
+  String get googleSignInFailed =>
+      _isAr ? 'فشل تسجيل الدخول عبر Google' : 'Google Sign-In failed';
+  String get googleSignInCancelled =>
+      _isAr ? 'تم إلغاء تسجيل الدخول عبر Google' : 'Google Sign-In was cancelled';
+  String get signOutFailed =>
+      _isAr ? 'فشل تسجيل الخروج، يرجى المحاولة مرة أخرى' : 'Sign out failed, please try again';
+  String get authenticationFailed =>
+      _isAr ? 'فشلت عملية المصادقة، يرجى المحاولة مرة أخرى' : 'Authentication failed, please try again';
 }
+
 
 
 

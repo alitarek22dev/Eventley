@@ -3,10 +3,27 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_settings.dart';
 import '../core/app_strings.dart';
+import '../services/auth_service.dart';
 import 'login_screen.dart';
 
-class ProfileScreenTab extends StatelessWidget {
-  const ProfileScreenTab({super.key});
+class ProfileScreenTab extends StatefulWidget {
+  final AuthService? authService;
+
+  const ProfileScreenTab({super.key, this.authService});
+
+  @override
+  State<ProfileScreenTab> createState() => _ProfileScreenTabState();
+}
+
+class _ProfileScreenTabState extends State<ProfileScreenTab> {
+  bool _isSigningOut = false;
+  late final AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   void _showLanguageBottomSheet(BuildContext context, AppSettings settings, AppStrings strings) {
     showModalBottomSheet(
@@ -62,11 +79,37 @@ class ProfileScreenTab extends StatelessWidget {
     );
   }
 
-  void _handleLogout(BuildContext context) {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
+  Future<void> _handleLogout() async {
+    if (_isSigningOut) return;
+
+    final strings = AppStrings.of(context);
+    setState(() {
+      _isSigningOut = true;
+    });
+
+    try {
+      await _authService.signOut();
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(strings.signOutFailed),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSigningOut = false;
+        });
+      }
+    }
   }
 
   @override
@@ -74,6 +117,16 @@ class ProfileScreenTab extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final strings = AppStrings.of(context);
     final settings = SettingsScope.of(context);
+
+    final rawName = _authService.currentUserName;
+    final rawEmail = _authService.currentUserEmail;
+
+    final userName = (rawName != null && rawName.trim().isNotEmpty)
+        ? rawName.trim()
+        : strings.userNamePlaceholder;
+    final userEmail = (rawEmail != null && rawEmail.trim().isNotEmpty)
+        ? rawEmail.trim()
+        : strings.userEmailPlaceholder;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
@@ -125,7 +178,7 @@ class ProfileScreenTab extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            strings.userNamePlaceholder,
+                            userName,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 22,
@@ -134,7 +187,7 @@ class ProfileScreenTab extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            strings.userEmailPlaceholder,
+                            userEmail,
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -210,12 +263,21 @@ class ProfileScreenTab extends StatelessWidget {
                     _buildMenuItem(
                       context: context,
                       title: strings.logout,
-                      trailing: const Icon(
-                        Icons.logout,
-                        color: Colors.redAccent,
-                        size: 22,
-                      ),
-                      onTap: () => _handleLogout(context),
+                      trailing: _isSigningOut
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.redAccent,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.logout,
+                              color: Colors.redAccent,
+                              size: 22,
+                            ),
+                      onTap: _isSigningOut ? null : _handleLogout,
                     ),
                   ],
                 ),

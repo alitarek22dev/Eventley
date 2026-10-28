@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import '../core/app_assets.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../services/auth_service.dart';
 import '../widgets/google_logo.dart';
 import '../widgets/onboarding_controls.dart';
 import 'home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  final AuthService? authService;
+
+  const SignUpScreen({super.key, this.authService});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -22,6 +25,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  late final AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   @override
   void dispose() {
@@ -32,9 +44,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _handleSignUp() {
-    if (_formKey.currentState?.validate() ?? false) {
-      final strings = AppStrings.of(context);
+  Future<void> _handleSignUp() async {
+    if (_isLoading) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final strings = AppStrings.of(context);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.signUpWithEmailAndPassword(
+        name: _nameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(strings.signUpSuccess),
@@ -44,10 +70,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
+    } catch (e) {
+      if (!mounted) return;
+      final errorMessage = _authService.getErrorMessage(e, strings);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _handleGoogleSignUp(AppStrings strings) {
+    if (_isLoading) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(strings.googleSignInNotConfigured),
@@ -57,6 +99,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _goToLogin() {
+    if (_isLoading) return;
     Navigator.of(context).pop();
   }
 
@@ -292,6 +335,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 24),
                     AppPrimaryButton(
                       label: strings.signUpButton,
+                      isLoading: _isLoading,
                       onPressed: _handleSignUp,
                     ),
                     const SizedBox(height: 16),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_assets.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../services/auth_service.dart';
 import '../widgets/google_logo.dart';
 import '../widgets/onboarding_controls.dart';
 import 'home_screen.dart';
@@ -10,7 +11,12 @@ import 'reset_password_screen.dart';
 import 'sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final AuthService? authService;
+
+  const LoginScreen({
+    super.key,
+    this.authService,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -21,6 +27,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  late final AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   @override
   void dispose() {
@@ -29,34 +44,89 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState?.validate() ?? false) {
+  Future<void> _handleLogin() async {
+    if (_isLoading) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final strings = AppStrings.of(context);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
+    } catch (e) {
+      if (!mounted) return;
+      final errorMessage = _authService.getErrorMessage(e, strings);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  void _handleGoogleSignIn(AppStrings strings) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(strings.googleSignInNotConfigured),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _handleGoogleSignIn(AppStrings strings) async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final errorMessage = _authService.getErrorMessage(e, strings);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _handleForgotPassword() {
+    if (_isLoading) return;
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
     );
   }
 
   void _handleSignUp() {
+    if (_isLoading) return;
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const SignUpScreen()),
     );
   }
+
 
 
   @override
@@ -233,6 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
                     AppPrimaryButton(
                       label: strings.login,
+                      isLoading: _isLoading,
                       onPressed: _handleLogin,
                     ),
                     const SizedBox(height: 16),
@@ -297,7 +368,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     OutlinedButton(
-                      onPressed: () => _handleGoogleSignIn(strings),
+                      onPressed: _isLoading ? null : () => _handleGoogleSignIn(strings),
+
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(56),
                         backgroundColor:
